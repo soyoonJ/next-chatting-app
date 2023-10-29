@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 import Loader from "@/components/loader/Loader";
+import { toast } from "react-toastify";
 import Input from "@/components/input/Input";
 import { emailValidation } from "@/utils/validation";
 
@@ -19,9 +19,16 @@ const LoginClient = () => {
     passwordConfirm: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  // TODO: 불필요한 상태 삭제
+  // const emailValidation = emailValidation(signUpInfo.email)
 
   const changeSignUpInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSignUpInfo({ ...signUpInfo, [e.target.name]: e.target.value });
+
+    if (e.target.name !== "email") return;
+    if (emailValidation(e.target.value)) setIsEmailValid(true);
+    else setIsEmailValid(false);
   };
 
   const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
@@ -35,12 +42,10 @@ const LoginClient = () => {
       toast.warning("비밀번호 확인을 완료해주세요");
       return;
     }
-
     if (!emailValidation(signUpInfo.email)) {
       toast.warning("이메일 형식에 맞게 입력해주세요");
       return;
     }
-
     if (signUpInfo.password !== signUpInfo.passwordConfirm) {
       toast.warning("비밀번호가 일치하지 않습니다");
       return;
@@ -91,6 +96,11 @@ const LoginClient = () => {
                 autoComplete="email"
                 required
               />
+              {signUpInfo.email !== "" && !isEmailValid && (
+                <p className="block text-sm m-1 font-medium leading-6 text-red-500">
+                  이메일 형식을 확인해주세요
+                </p>
+              )}
             </div>
 
             <div className="mt-2">
@@ -115,6 +125,17 @@ const LoginClient = () => {
                 autoComplete="current-password"
                 required
               />
+
+              {signUpInfo.passwordConfirm &&
+                (signUpInfo.password === signUpInfo.passwordConfirm ? (
+                  <p className="block text-sm m-1 font-medium leading-6 text-green-500">
+                    비밀번호가 일치합니다
+                  </p>
+                ) : (
+                  <p className="block text-sm m-1 font-medium leading-6 text-red-500">
+                    비밀번호가 일치하지 않습니다
+                  </p>
+                ))}
             </div>
 
             <button
